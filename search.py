@@ -62,6 +62,8 @@ def parse_args():
     parser.add_argument('-t', '--type', default=TITLE,
                         choices=[TITLE, PROJECT],
                         type=str, help='What to search for: t(i)tle, or (p)roject?')
+    parser.add_argument('-p', '--project_only', default=False,
+                        type=bool, help='Search project only?')
     parser.add_argument('query', type=unicode,
                         nargs=argparse.REMAINDER, help='query string')
 
@@ -93,31 +95,35 @@ def execute_search_query(args):
     if args.type == PROJECT:
         LOGGER.debug('Searching projects')
         project_results = queries.search_projects_by_title(WORKFLOW, LOGGER, query)
-        note_results = queries.search_notes_by_project_title(WORKFLOW, LOGGER, query)
+        if not args.project_only:
+            note_results = queries.search_notes_by_project_title(WORKFLOW, LOGGER, query)
         if not project_results:
             WORKFLOW.add_item('No search results found.')
         else:
             for project_result in project_results:
-                LOGGER.debug(project_result)
+                # LOGGER.debug(project_result)
                 project_arg = ':p:' + project_result[0]
-                WORKFLOW.add_item(title=project_result[1], subtitle="Open project",
+                WORKFLOW.add_item(title=project_result[1], subtitle="Open this project from \"" + project_result[2] + "\" Category",
                                   arg=project_arg, valid=True)
+            
+            # NOTE added logic to exclude note search by project title
+            if not args.project_only:
+                for note_result in note_results:
+                    if not is_deleted(note_result):
+                        # LOGGER.debug(note_results)
+                        note_arg = ':n:' + note_result[0]
 
-            for note_result in note_results:
-                if not is_deleted(note_result):
-                    LOGGER.debug(note_results)
-                    note_arg = ':n:' + note_result[0]
-
-                    if note_result[3] is None:
-                        subtitle = " "
-                    else:
-                        note_date = time.localtime(note_result[3] + APPLE_COCOA_TIME_OFFSET)
-                        if note_date.tm_hour == 0 and note_date.tm_min == 0:
-                            subtitle = time.strftime('%d %b %Y', note_date)
+                        if note_result[3] is None:
+                            subtitle = " "
                         else:
-                            subtitle = time.strftime('%d %b %Y %H:%M', note_date)
-                    WORKFLOW.add_item(title=note_result[1], subtitle=subtitle,
-                                    arg=note_arg, valid=True)
+                            note_date = time.localtime(note_result[3] + APPLE_COCOA_TIME_OFFSET)
+                            LOGGER.debug(note_date)
+                            if note_date.tm_hour == 0 and note_date.tm_min == 0:
+                                subtitle = time.strftime('Last edit: %d %b %Y', note_date)
+                            else:
+                                subtitle = time.strftime('Last edit: %d %b %Y %H:%M', note_date)
+                        WORKFLOW.add_item(title=note_result[1], subtitle=subtitle,
+                                        arg=note_arg, valid=True)
 
     else:
         LOGGER.debug('Searching notes')

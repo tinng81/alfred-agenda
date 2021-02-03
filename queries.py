@@ -15,32 +15,37 @@ DB_KEY = 'db_path'
 
 NOTES_BY_TITLE = (
     "SELECT "
-    "   ZIDENTIFIER, ZTITLE, ZPROPERTIES, ZSTARTDATE "
+    "   ZIDENTIFIER, ZTITLE, ZPROPERTIES, ZEDITEDDATE "
     "FROM ZSECTION "
     "WHERE "
     "   lower(ZTITLE) like lower('%{0}%') "
-    "ORDER BY ZSTARTDATE desc"
+    "ORDER BY ZEDITEDDATE desc"
 )
 
 PROJECTS_BY_TITLE = (
     "SELECT "
-    "   ZIDENTIFIER, ZTITLE "
-    "FROM ZDOCUMENT "
+    "   n.ZIDENTIFIER, n.ZTITLE, m.ZNAME "
+    "FROM "
+    "   ZDOCUMENT n, "
+    "	ZCATEGORY m, "
+	"ZCATEGORYRELATIONSHIP p "
     "WHERE "
-    "   (Z_OPT != 2 OR ZISHIDDEN != 1) "
-    "   AND lower(ZTITLE) LIKE lower('%{0}%')"
+    "   (n.Z_OPT != 2 OR n.ZISHIDDEN != 1) "
+    "   AND n.ZIDENTIFIER LIKE p.ZDOCUMENTIDENTIFIER "
+    "   AND p.ZCATEGORYIDENTIFIER LIKE m.ZIDENTIFIER "
+    "   AND lower(n.ZTITLE) LIKE lower('%{0}%')"
 )
 
 NOTES_BY_PROJECT_TITLE = (
     "SELECT DISTINCT"
-    "   n.ZIDENTIFIER, n.ZTITLE, n.ZPROPERTIES, n.ZSTARTDATE "
+    "   n.ZIDENTIFIER, n.ZTITLE, n.ZPROPERTIES, n.ZEDITEDDATE "
     "FROM "
     "   ZSECTION n "
     "   LEFT JOIN ZDOCUMENT p ON n.ZSTOREIDENTIFIER = p.ZSTOREIDENTIFIER "
     "WHERE "
     "   lower(p.ZTITLE) LIKE lower('%{0}%')"
     "ORDER BY "
-    "   n.ZSTARTDATE DESC")
+    "   n.ZEDITEDDATE DESC")
 
 def search_notes_by_title(workflow, log, query):
     """
