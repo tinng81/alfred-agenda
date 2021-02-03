@@ -15,11 +15,14 @@ DB_KEY = 'db_path'
 
 NOTES_BY_TITLE = (
     "SELECT "
-    "   ZIDENTIFIER, ZTITLE, ZPROPERTIES, ZEDITEDDATE "
-    "FROM ZSECTION "
+    "   n.ZIDENTIFIER, n.ZTITLE, n.ZPROPERTIES, n.ZEDITEDDATE, m.ZTITLE "
+    "FROM "
+    "   ZSECTION n, "
+    "   ZDOCUMENT m "
     "WHERE "
-    "   lower(ZTITLE) like lower('%{0}%') "
-    "ORDER BY ZEDITEDDATE desc"
+    "   lower(n.ZTITLE) like lower('%{0}%') "
+    "   AND n.ZSTOREIDENTIFIER LIKE m.ZSTOREIDENTIFIER "
+    "ORDER BY n.ZEDITEDDATE desc"
 )
 
 PROJECTS_BY_TITLE = (
@@ -38,12 +41,14 @@ PROJECTS_BY_TITLE = (
 
 NOTES_BY_PROJECT_TITLE = (
     "SELECT DISTINCT"
-    "   n.ZIDENTIFIER, n.ZTITLE, n.ZPROPERTIES, n.ZEDITEDDATE "
+    "   n.ZIDENTIFIER, n.ZTITLE, n.ZPROPERTIES, n.ZEDITEDDATE, m.ZTITLE "
     "FROM "
-    "   ZSECTION n "
+    "   ZSECTION n, "
+    "   ZDOCUMENT m "
     "   LEFT JOIN ZDOCUMENT p ON n.ZSTOREIDENTIFIER = p.ZSTOREIDENTIFIER "
     "WHERE "
     "   lower(p.ZTITLE) LIKE lower('%{0}%')"
+    "   AND n.ZSTOREIDENTIFIER LIKE m.ZSTOREIDENTIFIER "
     "ORDER BY "
     "   n.ZEDITEDDATE DESC")
 

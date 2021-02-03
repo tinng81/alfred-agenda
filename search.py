@@ -27,7 +27,7 @@ APPLE_COCOA_TIME_OFFSET = 978307200
 ccl_bplist.set_object_converter(ccl_bplist.NSKeyedArchiver_common_objects_convertor)
 
 # Update workflow from GitHub repo
-UPDATE_SETTINGS = {'github_slug': 'pcatterall7/alfred-agenda'}
+UPDATE_SETTINGS = {'github_slug': 'tinng81/alfred-agenda'}
 SHOW_UPDATES = True
 
 
@@ -103,7 +103,9 @@ def execute_search_query(args):
             for project_result in project_results:
                 # LOGGER.debug(project_result)
                 project_arg = ':p:' + project_result[0]
-                WORKFLOW.add_item(title=project_result[1], subtitle="Open this project from \"" + project_result[2] + "\" Category",
+                WORKFLOW.add_item(title=project_result[1], 
+                                  subtitle=("Open this project from \"" + project_result[2] + "\" Category") 
+                                    if not args.project_only else "Add this note to project \"" + project_result[1] + "\"",
                                   arg=project_arg, valid=True)
             
             # NOTE added logic to exclude note search by project title
@@ -122,7 +124,7 @@ def execute_search_query(args):
                                 subtitle = time.strftime('Last edit: %d %b %Y', note_date)
                             else:
                                 subtitle = time.strftime('Last edit: %d %b %Y %H:%M', note_date)
-                        WORKFLOW.add_item(title=note_result[1], subtitle=subtitle,
+                        WORKFLOW.add_item(title=note_result[1], subtitle=subtitle + " from \"" + note_result[4] + "\" Project",
                                         arg=note_arg, valid=True)
 
     else:
@@ -140,10 +142,11 @@ def execute_search_query(args):
                     else:
                         note_date = time.localtime(title_result[3] + APPLE_COCOA_TIME_OFFSET)
                         if note_date.tm_hour == 0 and note_date.tm_min == 0:
-                            subtitle = time.strftime('%d %b %Y', note_date)
+                            subtitle = time.strftime('Last edit: %d %b %Y', note_date)
                         else:
-                            subtitle = time.strftime('%d %b %Y %H:%M', note_date)                 
-                    WORKFLOW.add_item(title=title_result[1], subtitle=subtitle, arg=title_result[0], valid=True)
+                            subtitle = time.strftime('Last edit: %d %b %Y %H:%M', note_date)                 
+                    WORKFLOW.add_item(title=title_result[1], subtitle=subtitle + " from \"" + title_result[4] + "\" Project", 
+                                      arg=title_result[0], valid=True)
                     note_ids.append(title_result[0])
 
 
